@@ -14,6 +14,20 @@
 #import <objc/runtime.h>
 #import <math.h>
 #import <dlfcn.h>
+#import <os/log.h>
+
+static os_log_t fn_oslog(void) {
+    static os_log_t h;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        h = os_log_create("com.glesign.fnmactweak", "default");
+    });
+    return h;
+}
+
+#define fnlog(fmt, ...) \
+    os_log_with_type(fn_oslog(), OS_LOG_TYPE_DEFAULT, "%{public}@", \
+        [NSString stringWithFormat:@fmt, ##__VA_ARGS__])
 
 static void fnmac_install_swizzles(void);
 
@@ -784,17 +798,22 @@ static int pt_sysctlbyname(const char *name, void *oldp, size_t *oldlenp, void *
 
 __attribute__((constructor))
 static void fnmac_init(void) {
+    fnlog("init begin  pid=%d  bundle=%@",
+          getpid(),
+          [[NSBundle mainBundle] bundleIdentifier] ?: @"?");
 
     fnmac_install_swizzles();
 
     ue_init_gyro_hooks();
+    fnlog("gyro proxy hooks installed");
 
     struct rebinding rebindings[] = {
         {"sysctl", (void *)pt_sysctl, (void **)&orig_sysctl},
         {"sysctlbyname", (void *)pt_sysctlbyname, (void **)&orig_sysctlbyname},
         {"_availability_version_check", (void *)hooked_availability_version_check, (void **)&orig_availability_version_check}
     };
-    rebind_symbols(rebindings, 3);
+    int rb_rc = rebind_symbols(rebindings, 3);
+    fnlog("fishhook rebind rc=%d  (sysctl, sysctlbyname, _availability_version_check)", rb_rc);
 
     NSString* currentVersion = @"4.0.0";
     NSString* lastVersion = [[NSUserDefaults standardUserDefaults] stringForKey:@"fnmactweak.lastSeenVersion"];
@@ -804,6 +823,8 @@ static void fnmac_init(void) {
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"fnmactweak.welcomeSeenVersion"];
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"fnmactweak.welcomeSuppressed"];
         [[NSUserDefaults standardUserDefaults] setObject:currentVersion forKey:@"fnmactweak.lastSeenVersion"];
+        fnlog("first-run after upgrade: version %@ -> %@  (cleared remaps+welcome flags)",
+              lastVersion ?: @"(none)", currentVersion);
     }
     [[NSUserDefaults standardUserDefaults] synchronize];
 
@@ -833,9 +854,13 @@ static void fnmac_init(void) {
     }
 
     recalculateSensitivities();
+    fnlog("sensitivities: base_xy=%.2f  scale=%.2f  gyro=%.2f  direct_key=%d",
+          BASE_XY_SENSITIVITY, MACOS_TO_PC_SCALE, GYRO_MULTIPLIER, (int)GCMOUSE_DIRECT_KEY);
+
     loadKeyRemappings();
     loadFortniteKeybinds();
     loadControllerMappings();
+    fnlog("keybinds loaded  (custom remaps + fortnite defaults + controller map)");
 
     void *cgHandle = dlopen("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics", RTLD_NOW);
     if (cgHandle) {
@@ -853,7 +878,12 @@ static void fnmac_init(void) {
             CFRunLoopSourceRef runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0);
             CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopCommonModes);
             _CGEventTapEnable(eventTap, true);
+            fnlog("CGEventTap installed  (keyboard + other-mouse events)");
+        } else {
+            fnlog("CGEventTap create FAILED (keyboard + mouse events will not route through tap)");
         }
+    } else {
+        fnlog("CoreGraphics CGEventTap* unavailable  (CG dlsym failed)");
     }
 
     [[NSNotificationCenter defaultCenter]
@@ -886,10 +916,18 @@ static void fnmac_init(void) {
 
                 SEL connectSel = NSSelectorFromString(@"connectWithReplyHandler:");
                 void (^reply)(NSError *) = ^(NSError *error) {
-                    (void)error;
+                    if (error) {
+                        fnlog("virtual controller connect FAILED: %@", error.localizedDescription);
+                    } else {
+                        fnlog("virtual controller connected  (DualSense spoof active)");
+                    }
                 };
                 if ([g_virtualController respondsToSelector:connectSel])
                     ((void(*)(id,SEL,id))objc_msgSend)(g_virtualController, connectSel, reply);
+                else
+                    fnlog("virtual controller: connectWithReplyHandler: not available on this iOS");
+            } else {
+                fnlog("virtual controller: iOS < 15, skipping");
             }
         });
     }];
@@ -897,6 +935,7 @@ static void fnmac_init(void) {
     showWelcomePopupIfNeeded();
 
     isBorderlessModeEnabled = [tweakDefaults() boolForKey:kBorderlessWindowKey];
+    fnlog("borderless mode: %s", isBorderlessModeEnabled ? "ON" : "OFF");
 
     if (isBorderlessModeEnabled) {
         id __block observer = [[NSNotificationCenter defaultCenter]
@@ -1502,8 +1541,11 @@ static void fnmac_init(void) {
             id kbBlock = [kbMonitor copy];
             [kbInv setArgument:&kbBlock atIndex:3];
             [kbInv invoke];
+            fnlog("NSEvent local monitor installed  (keyboard + scroll taps)");
         }
     }
+
+    fnlog("init done");
 }
 
 static inline CGFloat PixelAlign(CGFloat value) {
@@ -2386,5 +2428,5 @@ static void fnmac_install_swizzles(void) {
                       (IMP)swz_Btn_pressed,
                       NULL);
 
-    NSLog(@"[fn-mac] swizzles installed (no-substrate build)");
+    fnlog("swizzles installed: 11 classes, 22 methods  (no-substrate build)");
 }
