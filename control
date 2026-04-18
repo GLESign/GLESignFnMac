@@ -1,8 +1,8 @@
 Package: com.glesign.fnmactweak
-Name: FnMacTweak (no-substrate)
-Version: 4.0.0+nosub
+Name: GLESignFnMac
+Version: 4.0.1
 Architecture: iphoneos-arm
-Description: FnMacTweak rebuilt without CydiaSubstrate. %hook blocks converted to runtime method_setImplementation swizzles, fishhook used for libc rebinds. Identical behaviour to the original 4.0.0 release.
+Description: GLESignFnMac rebuilt without CydiaSubstrate. %hook blocks converted to runtime method_setImplementation swizzles, fishhook used for libc rebinds. Identical behaviour to the original 4.0.0 release.
 Maintainer: GLESign (upstream: KohlerVG)
 Author: Leeksov
 Section: Tweaks
