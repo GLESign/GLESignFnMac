@@ -1,5 +1,3 @@
-
-
 #import "./welcomeViewController.h"
 #import "../globals.h"
 #import <objc/runtime.h>

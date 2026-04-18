@@ -1,5 +1,3 @@
-
-
 #import "./popupViewController.h"
 #import "../FnOverlayWindow.h"
 #import "../globals.h"
