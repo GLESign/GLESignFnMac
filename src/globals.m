@@ -8,7 +8,7 @@ GCKeyCode POPUP_KEY;
 
 __attribute__((constructor))
 static void initialize_global_keys() {
-    TRIGGER_KEY = 226; // Left Alt / Option
+    TRIGGER_KEY = 226;
     POPUP_KEY = GCKeyCodeF1;
 }
 
@@ -21,14 +21,13 @@ float MACOS_TO_PC_SCALE   = 20.0f;
 float GYRO_MULTIPLIER     = 100.0f;
 double GYRO_SENSE         = 0.001;
 BOOL isGCMouseDirectActive = NO;
-GCKeyCode GCMOUSE_DIRECT_KEY = 53; // Default to Backtick (GC 53)
+GCKeyCode GCMOUSE_DIRECT_KEY = 53;
 
 double hipSensitivityX = 0.0;
 double hipSensitivityY = 0.0;
 double adsSensitivityX = 0.0;
 double adsSensitivityY = 0.0;
 
-// --- GLOBAL INPUT STATE ---
 BOOL isMouseLocked = NO;
 double mouseAccumX = 0.0;
 double mouseAccumY = 0.0;
@@ -48,7 +47,6 @@ int ignoreNextLeftClickCount = 0;
 
 int controllerMappingArray[FnCtrlButtonCount] = {0};
 
-// --- REMAPPING STORAGE ---
 NSMutableDictionary<NSNumber *, NSNumber *> *keyRemappings = nil;
 NSMutableArray<NSDictionary *> *vctrlRemappings = nil;
 NSDictionary<NSNumber *, NSSet<NSNumber *> *> *vctrlCookedRemappings = nil;
@@ -65,13 +63,11 @@ GCKeyCode mouseScrollFortniteArray[MOUSE_SCROLL_COUNT] = {0};
 GCKeyCode lastLookupKey = 0;
 GCKeyCode lastRemappedKey = 0;
 
-// --- UI / POPUP ---
 BOOL isPopupVisible = false;
 UIWindow *popupWindow = nil;
 void (^keyCaptureCallback)(GCKeyCode keyCode) = nil;
 void (^mouseButtonCaptureCallback)(int buttonCode) = nil;
 
-// --- INDICATORS ---
 BOOL isBorderlessModeEnabled = false;
 UIView *blueDotIndicator = nil;
 CGPoint blueDotPosition = {0, 0};
@@ -150,7 +146,7 @@ void loadFortniteKeybinds() {
       @"Weapon Slot 4" : @(33), @"Weapon Slot 5" : @(34), @"Build" : @(20),
       @"Edit" : @(10), @"Wall" : @(29), @"Floor" : @(27), @"Stairs" : @(6),
       @"Roof" : @(25), @"Inventory Toggle" : @(230), @"Emote" : @(5),
-      @"Chat" : @(40), @"Push To Talk" : @(23), @"Shake Head" : @(11), 
+      @"Chat" : @(40), @"Push To Talk" : @(23), @"Shake Head" : @(11),
       @"Map" : @(16), @"Escape" : @(41)
     };
   }
@@ -191,7 +187,6 @@ void loadControllerMappings(void) {
         }
     }
 
-    // Load Virtual Controller Remaps
     NSArray *vctrlSaved = [tweakDefaults() arrayForKey:kVCtrlRemapKey];
     if (vctrlSaved && [vctrlSaved isKindOfClass:[NSArray class]]) {
         vctrlRemappings = [NSMutableArray arrayWithArray:vctrlSaved];
@@ -202,16 +197,13 @@ void loadControllerMappings(void) {
 }
 
 void saveControllerMappings(void) {
-    // Controller Mode is now always enabled
-    
-    // Save controller hardware mappings
+
     NSMutableDictionary *out = [NSMutableDictionary dictionary];
     for (int i = 0; i < FnCtrlButtonCount; i++) {
         if (controllerMappingArray[i] != 0) out[[NSString stringWithFormat:@"%d", i]] = @(controllerMappingArray[i]);
     }
     [tweakDefaults() setObject:out forKey:kControllerMappingKey];
 
-    // Save virtual controller remaps
     [tweakDefaults() setObject:vctrlRemappings forKey:kVCtrlRemapKey];
 
     [tweakDefaults() synchronize];

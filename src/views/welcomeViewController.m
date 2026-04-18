@@ -1,19 +1,4 @@
-// =============================================================================
-//  welcomeViewController.m — FnMacTweak
-//  First-launch welcome / onboarding screen.
-//
-//  This screen is shown once when the user first installs (or updates to a new
-//  version). It provides a brief overview of the tweak's controls and a
-//  "Continue" button that opens the settings panel on the Quick Start tab.
-//
-//  Persistence: the current version string is saved under kWelcomeSeenVersion
-//  in NSUserDefaults. showWelcomePopupIfNeeded() (globals.m) compares it to the
-//  running version and only shows this VC when they differ.
-//
-//  CONTRIBUTING: To update the welcome content, edit the label/button setup in
-//  -viewDidLoad. If you need a new version of the screen after an update, bump
-//  the version string passed to showWelcomePopupIfNeeded().
-// =============================================================================
+
 
 #import "./welcomeViewController.h"
 #import "../globals.h"
@@ -21,30 +6,24 @@
 
 #define kWelcomeSeenVersion @"fnmactweak.welcomeSeenVersion"
 
-// ─────────────────────────────────────────────────────────────────
-//  welcomeViewController — single Welcome screen, no tabs
-// ─────────────────────────────────────────────────────────────────
 @implementation welcomeViewController
 
-// Never lock the pointer to the welcome window.
 - (BOOL)prefersPointerLocked { return NO; }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    // ── Background ───────────────────────────────────────────────
     self.view.backgroundColor = [UIColor colorWithWhite:0.15 alpha:1.0];
     self.view.layer.cornerRadius = 12;
     self.view.layer.borderWidth = 0.5;
     self.view.layer.borderColor = [UIColor colorWithWhite:0.25 alpha:0.8].CGColor;
     self.view.layer.masksToBounds = YES;
 
-    CGFloat w = 320.0;  // Must match the container width set in showWelcomePopupIfNeeded
+    CGFloat w = 320.0;
     CGFloat pad = 20.0;
     CGFloat contentW = w - pad * 2;
     CGFloat y = 0;
 
-    // ── Title bar (40px, matches P pane) ───────────────────────
     UIView *titleBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, w, 40)];
     titleBar.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.15];
     [self.view addSubview:titleBar];
@@ -56,7 +35,6 @@
     titleLabel.textAlignment = NSTextAlignmentCenter;
     [titleBar addSubview:titleLabel];
 
-    // Version pill — matches P settings pane pill style
     CGFloat pillW = 44.0;
     CGFloat pillH = 16.0;
     CGFloat pillX = w - 12.0 - pillW;
@@ -76,7 +54,6 @@
 
     y = 40 + 20;
 
-    // ── Logo / icon row ──────────────────────────────────────────
     UILabel *iconLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, y, w, 48)];
     iconLabel.text = @"🎮";
     iconLabel.font = [UIFont systemFontOfSize:40];
@@ -84,7 +61,6 @@
     [self.view addSubview:iconLabel];
     y += 48 + 14;
 
-    // ── Description ──────────────────────────────────────────────
     UILabel *descLabel = [[UILabel alloc] init];
     descLabel.text = @"FnMacTweak lets you play Fortnite iOS on macOS with full mouse & keyboard support — including sensitivity tuning, key remapping, and controller mode.";
     descLabel.textColor = [UIColor colorWithWhite:0.75 alpha:1.0];
@@ -96,20 +72,17 @@
     [self.view addSubview:descLabel];
     y += descSize.height + 18;
 
-    // ── Divider ──────────────────────────────────────────────────
     UIView *divider = [[UIView alloc] initWithFrame:CGRectMake(pad, y, contentW, 1.0)];
     divider.backgroundColor = [UIColor colorWithWhite:0.3 alpha:0.5];
     [self.view addSubview:divider];
     y += 1.0 + 16;
-    
-    // Layout constants for grids
+
     CGFloat gutter  = 8.0;
     CGFloat cellW   = (contentW - gutter) / 2.0;
     CGFloat cellPad = 10.0;
     CGFloat badgeH  = 26.0;
     CGFloat innerCW = cellW - cellPad * 2;
-    
-    // ── Typing Mode (Caps Lock) ──────────────────────────────────
+
     CGFloat typingModeCellH = 72.0;
     UIView *typingModeCell = [[UIView alloc] initWithFrame:CGRectMake(pad, y, contentW, typingModeCellH)];
     typingModeCell.backgroundColor = [UIColor colorWithWhite:0.18 alpha:0.6];
@@ -117,13 +90,13 @@
     typingModeCell.layer.borderWidth = 0.5;
     typingModeCell.layer.borderColor = [UIColor colorWithWhite:0.25 alpha:0.4].CGColor;
     [self.view addSubview:typingModeCell];
-    
+
     UILabel *typingTitle = [[UILabel alloc] initWithFrame:CGRectMake(cellPad, 10, contentW - cellPad*2, 16)];
     typingTitle.text = @"Typing Mode (Raw Input)";
     typingTitle.textColor = [UIColor whiteColor];
     typingTitle.font = [UIFont systemFontOfSize:12 weight:UIFontWeightSemibold];
     [typingModeCell addSubview:typingTitle];
-    
+
     UILabel *capsBadge = [[UILabel alloc] initWithFrame:CGRectMake(cellPad, 34, 74, 26)];
     capsBadge.text = @"Caps Lock";
     capsBadge.textColor = [UIColor whiteColor];
@@ -135,19 +108,16 @@
     capsBadge.layer.borderColor = [UIColor colorWithWhite:0.45 alpha:0.6].CGColor;
     capsBadge.layer.masksToBounds = YES;
     [typingModeCell addSubview:capsBadge];
-    
+
     UILabel *typingDesc = [[UILabel alloc] initWithFrame:CGRectMake(cellPad + 82, 30, contentW - (cellPad + 82) - cellPad, 36)];
     typingDesc.text = @"Toggles raw keyboard input. Syncs with your keyboard's light.";
     typingDesc.textColor = [UIColor colorWithWhite:0.75 alpha:1.0];
     typingDesc.font = [UIFont systemFontOfSize:11 weight:UIFontWeightRegular];
     typingDesc.numberOfLines = 2;
     [typingModeCell addSubview:typingDesc];
-    
+
     y += typingModeCellH + 12;
 
-    // ── 2-COLUMN GRID: "Opening Settings" | "Lock / Unlock Cursor" ──
-
-    // Measure desc text so both cells share equal height
     UILabel *tmpP = [[UILabel alloc] init];
     tmpP.font = [UIFont systemFontOfSize:11 weight:UIFontWeightRegular];
     tmpP.numberOfLines = 0;
@@ -164,7 +134,6 @@
     CGFloat descH  = MAX(pDescH, lDescH);
     CGFloat cellH  = cellPad + titleH + 8 + badgeH + 8 + descH + cellPad;
 
-    // ── Left cell: Opening Settings ──────────────────────────────
     UIView *openCell = [[UIView alloc] initWithFrame:CGRectMake(pad, y, cellW, cellH)];
     openCell.backgroundColor = [UIColor colorWithWhite:0.18 alpha:0.6];
     openCell.layer.cornerRadius = 8;
@@ -197,7 +166,6 @@
     openDesc.numberOfLines = 0;
     [openCell addSubview:openDesc];
 
-    // ── Right cell: Lock / Unlock Cursor ─────────────────────────
     UIView *lockCell = [[UIView alloc] initWithFrame:CGRectMake(pad + cellW + gutter, y, cellW, cellH)];
     lockCell.backgroundColor = [UIColor colorWithWhite:0.18 alpha:0.6];
     lockCell.layer.cornerRadius = 8;
@@ -232,12 +200,10 @@
 
     y += cellH + 22;
 
-    // ── Buttons ──────────────────────────────────────────────────
     CGFloat btnH = 36;
     CGFloat btnSpacing = 8;
     CGFloat halfW = (contentW - btnSpacing) / 2.0;
 
-    // Row 1 — Continue to Quick Start Guide (primary, full width)
     UIButton *continueBtn = [UIButton buttonWithType:UIButtonTypeSystem];
     continueBtn.frame = CGRectMake(pad, y, contentW, btnH);
     continueBtn.backgroundColor = [UIColor colorWithRed:0.20 green:0.53 blue:1.0 alpha:1.0];
@@ -250,7 +216,6 @@
     [self.view addSubview:continueBtn];
     y += btnH + btnSpacing;
 
-    // Row 2 left — Dismiss (styled to match tab grey buttons)
     UIButton *dismissBtn = [UIButton buttonWithType:UIButtonTypeSystem];
     dismissBtn.frame = CGRectMake(pad, y, halfW, btnH);
     dismissBtn.backgroundColor = [UIColor colorWithWhite:0.25 alpha:0.5];
@@ -264,7 +229,6 @@
     [dismissBtn addTarget:self action:@selector(dismissTapped) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:dismissBtn];
 
-    // Row 2 right — Don't Show Again (styled to match tab grey buttons)
     UIButton *dontShowBtn = [UIButton buttonWithType:UIButtonTypeSystem];
     dontShowBtn.frame = CGRectMake(pad + halfW + btnSpacing, y, halfW, btnH);
     dontShowBtn.backgroundColor = [UIColor colorWithWhite:0.25 alpha:0.5];
@@ -279,7 +243,6 @@
     [self.view addSubview:dontShowBtn];
     y += btnH + 20;
 
-    // ── Resize container and re-center vertically using actual content height ─
     dispatch_async(dispatch_get_main_queue(), ^{
         UIView *container = objc_getAssociatedObject(self, "welcomeContainer");
         if (container && container.superview) {
@@ -289,15 +252,13 @@
             f.origin.y = (superBounds.size.height - y) / 2.0;
             container.frame = f;
         }
-        // Keep vc.view pinned to container bounds (no autoresizing)
+
         self.view.frame = CGRectMake(0, 0, w, y);
     });
 }
 
-// ── Button actions ────────────────────────────────────────────────
-
 - (void)continueTapped {
-    // Close welcome container, then open P settings pane on Quick Start tab
+
     UIView *container = objc_getAssociatedObject(self, "welcomeContainer");
     if (container) {
         [UIView animateWithDuration:0.18 animations:^{
@@ -319,16 +280,14 @@
 - (void)dontShowAgainTapped {
     NSString *currentVersion = [[NSUserDefaults standardUserDefaults] stringForKey:@"fnmactweak.lastSeenVersion"] ?: @"2.0.4";
     [[NSUserDefaults standardUserDefaults] setObject:currentVersion forKey:kWelcomeSeenVersion];
-    // Store which version was suppressed. When the version bumps,
-    // this won't match and the popup will reshow once for the new version.
+
     [[NSUserDefaults standardUserDefaults] setObject:currentVersion forKey:@"fnmactweak.welcomeSuppressed"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     [self closeWelcomeWindow];
 }
 
 - (void)closeWelcomeWindow {
-    // The welcome UI is now a UIView (welcomeContainer) inside the game window.
-    // Retrieve it from the association set in showWelcomePopupIfNeeded.
+
     UIView *container = objc_getAssociatedObject(self, "welcomeContainer");
     if (container) {
         [UIView animateWithDuration:0.18 animations:^{
@@ -347,16 +306,10 @@
 
 @end
 
-
-// ── C helper: show the welcome popup ─────────────────────────────
 void showWelcomePopupIfNeeded(void) {
-    // Use lastSeenVersion — written by %ctor on every install/update from the control
-    // file version. This is reliable even for users upgrading from 2.0.0 where
-    // fnmactweak.version was never written correctly due to the wrong bundle ID in postinst.
+
     NSString *currentVersion = [[NSUserDefaults standardUserDefaults] stringForKey:@"fnmactweak.lastSeenVersion"] ?: @"2.0.4";
 
-    // "Don't Show Again" suppression — only blocks if the suppressed version matches
-    // the current version. A version bump clears this automatically.
     NSString *suppressedVersion = [[NSUserDefaults standardUserDefaults] stringForKey:@"fnmactweak.welcomeSuppressed"];
     if (suppressedVersion && [suppressedVersion isEqualToString:currentVersion]) {
         return;
@@ -371,9 +324,6 @@ void showWelcomePopupIfNeeded(void) {
         UIWindowScene *scene = (UIWindowScene *)[[UIApplication sharedApplication].connectedScenes anyObject];
         if (!scene) return;
 
-        // Get the game window — the lowest-windowLevel window in the scene.
-        // We add the welcome UI directly to this window so it can never steal
-        // key-window status and never interferes with pointer lock.
         UIWindow *gameWindow = nil;
         for (UIWindow *w in scene.windows) {
             if (!gameWindow || w.windowLevel < gameWindow.windowLevel) {
@@ -383,10 +333,9 @@ void showWelcomePopupIfNeeded(void) {
         if (!gameWindow) return;
 
         CGFloat w = 320.0;
-        CGFloat h = 420.0; // Resized by viewDidLoad
+        CGFloat h = 420.0;
         CGSize screenSize = gameWindow.bounds.size;
 
-        // Container view — added directly to the game window (no separate UIWindow needed)
         UIView *welcomeContainer = [[UIView alloc] initWithFrame:CGRectMake(
             (screenSize.width  - w) / 2.0,
             (screenSize.height - h) / 2.0,
@@ -400,18 +349,15 @@ void showWelcomePopupIfNeeded(void) {
 
         welcomeViewController *vc = [welcomeViewController new];
 
-        // Fixed size — no autoresizing
         vc.view.frame = CGRectMake(0, 0, w, h);
         vc.view.autoresizingMask = UIViewAutoresizingNone;
         vc.view.userInteractionEnabled = YES;
 
-        // Retain the VC via association on the container view
         objc_setAssociatedObject(welcomeContainer, "welcomeVC", vc, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 
         [welcomeContainer addSubview:vc.view];
         [gameWindow addSubview:welcomeContainer];
 
-        // Store container ref on the VC so button actions can hide/remove it
         objc_setAssociatedObject(vc, "welcomeContainer", welcomeContainer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 
         [UIView animateWithDuration:0.45

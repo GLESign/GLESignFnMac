@@ -1,15 +1,12 @@
 #import <GameController/GameController.h>
 #import <UIKit/UIKit.h>
 
-// For spoofing device specifications
 #define DEVICE_MODEL "iPad17,4"
 #define OEM_ID "A3361"
 
-// Isolated UserDefaults suite
 #define kTweakSuiteName @"com.fnmactweak.prefs"
 #define tweakDefaults() [[NSUserDefaults alloc] initWithSuiteName:kTweakSuiteName]
 
-// Setting keys
 #define kSettingsKey @"fnmactweak.settings"
 #define kBaseXYKey @"baseXYSensitivity"
 #define kLookXKey @"lookSensitivityX"
@@ -56,7 +53,6 @@ typedef NS_ENUM(NSInteger, FnControllerButton) {
     FnCtrlButtonCount    = 25,
 };
 
-// --- GLOBAL STATE ---
 extern int controllerMappingArray[FnCtrlButtonCount];
 extern id g_virtualController;
 extern BOOL isControllerModeEnabled;
@@ -75,7 +71,6 @@ extern BOOL rightButtonIsPressed;
 extern BOOL middleButtonIsPressed;
 extern double g_lastGyroPollTime;
 
-// --- SENSITIVITY ---
 extern float BASE_XY_SENSITIVITY;
 extern float LOOK_SENSITIVITY_X;
 extern float LOOK_SENSITIVITY_Y;
@@ -92,7 +87,6 @@ extern double hipSensitivityY;
 extern double adsSensitivityX;
 extern double adsSensitivityY;
 
-// --- REMAPPING ---
 extern NSMutableDictionary<NSNumber *, NSNumber *> *keyRemappings;
 extern GCKeyCode keyRemapArray[512];
 extern GCKeyCode fortniteRemapArray[10200];
@@ -114,13 +108,11 @@ extern GCKeyCode mouseScrollFortniteArray[MOUSE_SCROLL_COUNT];
 extern GCKeyCode lastLookupKey;
 extern GCKeyCode lastRemappedKey;
 
-// --- UI / POPUP ---
 extern BOOL isPopupVisible;
 extern UIWindow *popupWindow;
 extern void (^keyCaptureCallback)(GCKeyCode keyCode);
 extern void (^mouseButtonCaptureCallback)(int buttonCode);
 
-// --- INDICATORS ---
 extern BOOL isBorderlessModeEnabled;
 extern UIView *blueDotIndicator;
 extern CGPoint blueDotPosition;
@@ -131,7 +123,6 @@ extern GCKeyCode POPUP_KEY;
 extern GCKeyCode TRIGGER_KEY;
 extern GCKeyCode POPUP_KEY;
 
-// Custom mouse codes
 #define MOUSE_BUTTON_MIDDLE 10001
 #define MOUSE_BUTTON_AUX_BASE 10002
 #define MOUSE_BUTTON_AUX_MAX 10031
