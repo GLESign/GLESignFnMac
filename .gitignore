@@ -1,0 +1,9 @@
+# Theos build output
+.theos/
+packages/
+obj/
+*.deb
+*.dylib
+
+# macOS cruft
+.DS_Store
